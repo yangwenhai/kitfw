@@ -1,0 +1,8 @@
+package protocol
+
+const (
+	PROTOCOL_SUM_REQUEST    = 1
+	PROTOCOL_SUM_REPLY      = 2
+	PROTOCOL_CONCAT_REQUEST = 3
+	PROTOCOL_CONCAT_REPLY   = 4
+)
