@@ -159,61 +159,100 @@
 			"revisionTime": "2013-12-04T01:25:54Z"
 		},
 		{
-			"checksumSHA1": "Q7HHFWRGosQ59ZKJygsJD4tpEQA=",
+			"checksumSHA1": "NVEMq5LeTf/tWE+zXTiHyOGuDyI=",
 			"path": "github.com/go-kit/kit",
 			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
 			"revisionTime": "2016-11-15T00:47:34Z",
-			"tree": true,
 			"version": "v0.3.0",
 			"versionExact": "v0.3.0"
 		},
 		{
-			"checksumSHA1": "0x6tKraaJRo//YVEB2FotP2Mhww=",
+			"checksumSHA1": "bVTfSjDEEXDWFVbCrxz/PUOoZbA=",
 			"path": "github.com/go-kit/kit/endpoint",
-			"revision": "5d93a23737003ed3ad90359f0aeb25e08dfdf547",
-			"revisionTime": "2017-03-24T23:12:18Z"
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
 		},
 		{
-			"checksumSHA1": "Y1zpEnbSvlhLozUt6U63CvC3PNw=",
+			"checksumSHA1": "7Ta13bcuAlF1esPxSPljmpsSUwc=",
 			"path": "github.com/go-kit/kit/log",
-			"revision": "5d93a23737003ed3ad90359f0aeb25e08dfdf547",
-			"revisionTime": "2017-03-24T23:12:18Z"
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
 		},
 		{
-			"checksumSHA1": "rt/goV5G9VZ+R7feZq/vVXPpWu0=",
+			"checksumSHA1": "X23FDS6kSq1WMFTiJB+sd9EwE2k=",
 			"path": "github.com/go-kit/kit/metrics",
-			"revision": "5d93a23737003ed3ad90359f0aeb25e08dfdf547",
-			"revisionTime": "2017-03-24T23:12:18Z"
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
 		},
 		{
-			"checksumSHA1": "nqjHqtG6eWaipohdW/nM5h51JVE=",
+			"checksumSHA1": "VfFTG7nnbt8gBNlrN7loHTtiDFw=",
 			"path": "github.com/go-kit/kit/metrics/internal/lv",
-			"revision": "5d93a23737003ed3ad90359f0aeb25e08dfdf547",
-			"revisionTime": "2017-03-24T23:12:18Z"
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
 		},
 		{
 			"checksumSHA1": "hArYy708bvIGnxJIC/Tr/ehkUms=",
 			"path": "github.com/go-kit/kit/metrics/prometheus",
-			"revision": "5d93a23737003ed3ad90359f0aeb25e08dfdf547",
-			"revisionTime": "2017-03-24T23:12:18Z"
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
 		},
 		{
-			"checksumSHA1": "es2WuMuOmlp0TwFz3Mk0KFBiSEw=",
+			"checksumSHA1": "HqBG+bnHAuzPXFiKT1LK250ZjH8=",
+			"path": "github.com/go-kit/kit/sd",
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
+		},
+		{
+			"checksumSHA1": "ivtCcdgSmX35OQ1iVAJRYW8q7Tg=",
+			"path": "github.com/go-kit/kit/sd/cache",
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
+		},
+		{
+			"checksumSHA1": "Td/Pop+eMPnaEFd1S4nvBte5OCY=",
+			"path": "github.com/go-kit/kit/sd/etcd",
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
+		},
+		{
+			"checksumSHA1": "P2+NikJh1BSUX0bLfHmewjbR78o=",
 			"path": "github.com/go-kit/kit/tracing/opentracing",
-			"revision": "5d93a23737003ed3ad90359f0aeb25e08dfdf547",
-			"revisionTime": "2017-03-24T23:12:18Z"
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
 		},
 		{
-			"checksumSHA1": "zsTj+rmO1WL4spU60ErJI1P4Ci8=",
+			"checksumSHA1": "2cL+RZshAthS8ahAgM4dN3Yt0o0=",
 			"path": "github.com/go-kit/kit/transport/grpc",
-			"revision": "5d93a23737003ed3ad90359f0aeb25e08dfdf547",
-			"revisionTime": "2017-03-24T23:12:18Z"
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
 		},
 		{
-			"checksumSHA1": "95ci5IxdWgtJkyNuvMuz6SbkhJQ=",
+			"checksumSHA1": "voLAZwm38JoEdwFfpz7LUaSyxtA=",
 			"path": "github.com/go-kit/kit/transport/http",
-			"revision": "5d93a23737003ed3ad90359f0aeb25e08dfdf547",
-			"revisionTime": "2017-03-24T23:12:18Z"
+			"revision": "f66b0e13579bfc5a48b9e2a94b1209c107ea1f41",
+			"revisionTime": "2016-11-15T00:47:34Z",
+			"version": "v0.3.0",
+			"versionExact": "v0.3.0"
 		},
 		{
 			"checksumSHA1": "KxX/Drph+byPXBFIXaCZaCOAnrU=",
