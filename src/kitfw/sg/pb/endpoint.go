@@ -34,7 +34,8 @@ func MakeProcessEndpoint(s kitfwService.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		q := request.(*KitfwRequest)
 		ctx = context.WithValue(ctx, "logid", q.Logid)
-		v, err := s.Process(ctx, q.Protoid, q.Payload)
+		new_ctx, v, err := s.Process(ctx, q.Protoid, q.Payload)
+		_ = new_ctx
 		if err != nil {
 			return nil, err
 		}

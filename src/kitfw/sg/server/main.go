@@ -94,7 +94,7 @@ func main() {
 				os.Exit(1)
 			}
 			tracer, err = zipkin.NewTracer(
-				zipkin.NewRecorder(collector, false, "localhost:80", "addsvc"),
+				zipkin.NewRecorder(collector, true, "servicename:host_ip", "kitfw"), zipkin.WithLogger(logger),
 			)
 			if err != nil {
 				logger.Log("err", err)

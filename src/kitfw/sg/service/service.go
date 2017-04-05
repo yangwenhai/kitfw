@@ -12,7 +12,7 @@ import (
 )
 
 type Service interface {
-	Process(ctx context.Context, protoid int32, payload []byte) ([]byte, error)
+	Process(ctx context.Context, protoid int32, payload []byte) (context.Context, []byte, error)
 }
 
 // Middleware describes a service (as opposed to endpoint) middleware.
@@ -34,18 +34,19 @@ func ServiceLoggingMiddleware(logger log.Logger) Middleware {
 	}
 }
 
-func (mw serviceLoggingMiddleware) Process(ctx context.Context, protoid int32, payload []byte) (ret []byte, err error) {
+func (mw serviceLoggingMiddleware) Process(ctx context.Context, protoid int32, payload []byte) (new_ctx context.Context, ret []byte, err error) {
 	defer func(begin time.Time) {
 		mw.logger.Log(
-			"logid", ctx.Value("logid"),
-			"method", ctx.Value("method"),
-			"userid", ctx.Value("userid"),
+			"logid", new_ctx.Value("logid"),
 			"protoid", protoid,
+			"method", new_ctx.Value("method"),
+			"userid", new_ctx.Value("userid"),
 			"error", err,
 			"took", time.Since(begin),
 		)
 	}(time.Now())
-	return mw.next.Process(ctx, protoid, payload)
+	new_ctx, ret, err = mw.next.Process(ctx, protoid, payload)
+	return new_ctx, ret, err
 }
 
 type serviceInstrumentingMiddleware struct {
@@ -67,13 +68,14 @@ func ServiceInstrumentingMiddleware(rc metrics.Counter, rl metrics.Histogram) Mi
 	}
 }
 
-func (mw serviceInstrumentingMiddleware) Process(ctx context.Context, protoid int32, payload []byte) (ret []byte, err error) {
+func (mw serviceInstrumentingMiddleware) Process(ctx context.Context, protoid int32, payload []byte) (new_ctx context.Context, ret []byte, err error) {
 	defer func(begin time.Time) {
-		lvs := []string{"method", "Process", "protoid", fmt.Sprint(protoid), "error", fmt.Sprint(err != nil)}
+		lvs := []string{"method", new_ctx.Value("method").(string), "protoid", fmt.Sprint(protoid), "error", fmt.Sprint(err != nil)}
 		mw.requestCount.With(lvs...).Add(1)
 		mw.requestLatency.With(lvs...).Observe(time.Since(begin).Seconds())
 	}(time.Now())
-	return mw.next.Process(ctx, protoid, payload)
+	new_ctx, ret, err = mw.next.Process(ctx, protoid, payload)
+	return new_ctx, ret, err
 }
 
 type basicService struct{}
@@ -83,10 +85,10 @@ func NewBasicService() Service {
 }
 
 // process implements Service.
-func (s basicService) Process(ctx context.Context, protoid int32, payload []byte) ([]byte, error) {
+func (s basicService) Process(ctx context.Context, protoid int32, payload []byte) (context.Context, []byte, error) {
 	h := GetHandler(protoid)
 	if h == nil {
-		return nil, errors.New(fmt.Sprintf("error protoid:%d", protoid))
+		return ctx, nil, errors.New(fmt.Sprintf("error protoid:%d", protoid))
 	}
 	return h.Process(ctx, payload)
 }
@@ -102,10 +104,10 @@ func NewSumHandler() *SumHandler {
 	return &SumHandler{request, reply}
 }
 
-func (handler *SumHandler) Process(ctx context.Context, payload []byte) ([]byte, error) {
+func (handler *SumHandler) Process(ctx context.Context, payload []byte) (context.Context, []byte, error) {
 	err := protocol.Decode(handler.request, payload)
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
 
 	ctx = context.WithValue(ctx, "method", "Sum")
@@ -115,9 +117,9 @@ func (handler *SumHandler) Process(ctx context.Context, payload []byte) ([]byte,
 
 	ret, err := protocol.Encode(handler.reply)
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
-	return ret, nil
+	return ctx, ret, nil
 }
 
 type ConcatHandler struct {
@@ -131,26 +133,26 @@ func NewConcatHandler() *ConcatHandler {
 	return &ConcatHandler{request, reply}
 }
 
-func (handler *ConcatHandler) Process(ctx context.Context, payload []byte) ([]byte, error) {
+func (handler *ConcatHandler) Process(ctx context.Context, payload []byte) (context.Context, []byte, error) {
 	err := protocol.Decode(handler.request, payload)
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
 
-	ctx = context.WithValue(ctx, "method", "Sum")
+	ctx = context.WithValue(ctx, "method", "Concat")
 	ctx = context.WithValue(ctx, "userid", handler.request.UserId)
 
 	handler.doProcess(ctx)
 
 	ret, err := protocol.Encode(handler.reply)
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
-	return ret, nil
+	return ctx, ret, nil
 }
 
 type BaseHandler interface {
-	Process(context.Context, []byte) ([]byte, error)
+	Process(context.Context, []byte) (context.Context, []byte, error)
 	doProcess(ctx context.Context)
 }
 
