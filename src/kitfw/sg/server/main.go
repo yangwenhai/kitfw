@@ -196,7 +196,7 @@ func main() {
 		// registrar
 		go func() {
 			registrar := sdetcd.NewRegistrar(etcdClient, sdetcd.Service{
-				Key:           fmt.Sprintf("%s/%s/%s", "/kitfw/service", "sum", *grpcAddr),
+				Key:           fmt.Sprintf("%s/%s", "/kitfw/service", *grpcAddr),
 				Value:         *grpcAddr,
 				DeleteOptions: nil,
 			}, logger)
