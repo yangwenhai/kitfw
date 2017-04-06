@@ -78,15 +78,17 @@ func (mw serviceInstrumentingMiddleware) Process(ctx context.Context, protoid in
 	return new_ctx, ret, err
 }
 
-type basicService struct{}
+type basicService struct {
+	logger log.Logger
+}
 
-func NewBasicService() Service {
-	return basicService{}
+func NewBasicService(logger log.Logger) Service {
+	return basicService{logger: logger}
 }
 
 // process implements Service.
 func (s basicService) Process(ctx context.Context, protoid int32, payload []byte) (context.Context, []byte, error) {
-	h := GetHandler(protoid)
+	h := GetHandler(protoid, s.logger)
 	if h == nil {
 		return ctx, nil, errors.New(fmt.Sprintf("error protoid:%d", protoid))
 	}
@@ -96,12 +98,13 @@ func (s basicService) Process(ctx context.Context, protoid int32, payload []byte
 type SumHandler struct {
 	request *protocol.SumRequest
 	reply   *protocol.SumReply
+	logger  log.Logger
 }
 
-func NewSumHandler() *SumHandler {
+func NewSumHandler(logger log.Logger) *SumHandler {
 	request := &protocol.SumRequest{}
 	reply := &protocol.SumReply{}
-	return &SumHandler{request, reply}
+	return &SumHandler{request, reply, logger}
 }
 
 func (handler *SumHandler) Process(ctx context.Context, payload []byte) (context.Context, []byte, error) {
@@ -112,6 +115,12 @@ func (handler *SumHandler) Process(ctx context.Context, payload []byte) (context
 
 	ctx = context.WithValue(ctx, "method", "Sum")
 	ctx = context.WithValue(ctx, "userid", handler.request.UserId)
+	logger := log.NewContext(handler.logger).With("logid", ctx.Value("logid"))
+	logger = log.NewContext(logger).With("logid", ctx.Value("logid"))
+	logger = log.NewContext(logger).With("protoid", protocol.PROTOCOL_SUM_REQUEST)
+	logger = log.NewContext(logger).With("method", "Sum")
+	logger = log.NewContext(logger).With("userid", handler.request.UserId)
+	handler.logger = logger
 
 	handler.doProcess(ctx)
 
@@ -125,12 +134,13 @@ func (handler *SumHandler) Process(ctx context.Context, payload []byte) (context
 type ConcatHandler struct {
 	request *protocol.ConcatRequest
 	reply   *protocol.ConcatReply
+	logger  log.Logger
 }
 
-func NewConcatHandler() *ConcatHandler {
+func NewConcatHandler(logger log.Logger) *ConcatHandler {
 	request := &protocol.ConcatRequest{}
 	reply := &protocol.ConcatReply{}
-	return &ConcatHandler{request, reply}
+	return &ConcatHandler{request, reply, logger}
 }
 
 func (handler *ConcatHandler) Process(ctx context.Context, payload []byte) (context.Context, []byte, error) {
@@ -141,6 +151,11 @@ func (handler *ConcatHandler) Process(ctx context.Context, payload []byte) (cont
 
 	ctx = context.WithValue(ctx, "method", "Concat")
 	ctx = context.WithValue(ctx, "userid", handler.request.UserId)
+
+	handler.logger = log.NewContext(handler.logger).With("logid", ctx.Value("logid"))
+	handler.logger = log.NewContext(handler.logger).With("protoid", protocol.PROTOCOL_CONCAT_REQUEST)
+	handler.logger = log.NewContext(handler.logger).With("method", "Concat")
+	handler.logger = log.NewContext(handler.logger).With("userid", handler.request.UserId)
 
 	handler.doProcess(ctx)
 
@@ -156,16 +171,16 @@ type BaseHandler interface {
 	doProcess(ctx context.Context)
 }
 
-type NewHandlerFunc func() BaseHandler
+type NewHandlerFunc func(logger log.Logger) BaseHandler
 
 var HandlerMap = map[int32]NewHandlerFunc{
-	protocol.PROTOCOL_SUM_REQUEST:    func() BaseHandler { return NewSumHandler() },
-	protocol.PROTOCOL_CONCAT_REQUEST: func() BaseHandler { return NewConcatHandler() },
+	protocol.PROTOCOL_SUM_REQUEST:    func(logger log.Logger) BaseHandler { return NewSumHandler(logger) },
+	protocol.PROTOCOL_CONCAT_REQUEST: func(logger log.Logger) BaseHandler { return NewConcatHandler(logger) },
 }
 
-func GetHandler(ProtoId int32) BaseHandler {
+func GetHandler(ProtoId int32, logger log.Logger) BaseHandler {
 	if HandlerMap[ProtoId] != nil {
-		return HandlerMap[ProtoId]()
+		return HandlerMap[ProtoId](logger)
 	} else {
 		return nil
 	}

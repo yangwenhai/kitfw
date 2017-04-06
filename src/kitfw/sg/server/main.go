@@ -110,7 +110,7 @@ func main() {
 	// Business domain.
 	var service kitservice.Service
 	{
-		service = kitservice.NewBasicService()
+		service = kitservice.NewBasicService(logger)
 		service = kitservice.ServiceLoggingMiddleware(logger)(service)
 		service = kitservice.ServiceInstrumentingMiddleware(requestCount, duration)(service)
 	}
@@ -195,8 +195,9 @@ func main() {
 		}
 		// registrar
 		go func() {
+			key := fmt.Sprintf("%s/%s", "/kitfw/service", *grpcAddr)
 			registrar := sdetcd.NewRegistrar(etcdClient, sdetcd.Service{
-				Key:           fmt.Sprintf("%s/%s", "/kitfw/service", *grpcAddr),
+				Key:           key,
 				Value:         *grpcAddr,
 				DeleteOptions: nil,
 			}, logger)
@@ -205,10 +206,14 @@ func main() {
 				logger.Log("expected new Client, got nil")
 				os.Exit(1)
 			}
+			registrar.Deregister()
 			registrar.Register()
 			for {
 				time.Sleep(8 * time.Second)
-				registrar.Register()
+				res, _ := etcdClient.GetEntries(key)
+				if res == nil {
+					registrar.Register()
+				}
 			}
 		}()
 		logger.Log("etcdAddr", *etcdAddr)
