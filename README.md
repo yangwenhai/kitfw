@@ -14,6 +14,7 @@ $ docker run -d -p 9411:9411 openzipkin/zipkin
 $ docker pull quay.io/coreos/etcd:v2.2.0    
 
 $ HostIP="192.168.88.68"
+
 $ docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
  --name etcd quay.io/coreos/etcd:v2.2.0 \
  -name etcd0 \
@@ -48,8 +49,8 @@ $ go build kitfw/sg/client
 
 # result
 
- ![image](https://github.com/yangwenhai/kitfw/image/server.png)
+ ![image](https://github.com/yangwenhai/kitfw/blob/master/image/server.png)
 
- ![image](https://github.com/yangwenhai/kitfw/image/client.png)
+ ![image](https://github.com/yangwenhai/kitfw/blob/master/image/client.png)
 
- ![image](https://github.com/yangwenhai/kitfw/image/zipkin.png)
+ ![image](https://github.com/yangwenhai/kitfw/blob/master/image/zipkin.png)
