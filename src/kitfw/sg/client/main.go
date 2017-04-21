@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
-	"strconv"
+	"time"
 
 	"kitfw/sg/pb"
 
@@ -35,17 +36,21 @@ func main() {
 		return
 	}
 
+	rand.Seed(time.Now().UnixNano())
+	userid := int64(rand.Intn(10000))%10000 + 10000
+
 	//encode capnp
-	userid, _ := strconv.ParseInt(os.Args[1], 10, 64)
 	req := &protocol.ConcatRequest{
 		UserId: userid,
-		Str1:   os.Args[2],
-		Str2:   os.Args[3],
+		Str1:   os.Args[1],
+		Str2:   os.Args[2],
 	}
 	payload, _ := protocol.Encode(req)
 
 	//send request
-	md := metadata.New(map[string]string{"userid": "1001", "logid": "123456"})
+	starttime := time.Now()
+	logid := fmt.Sprintf("%d", time.Now().UnixNano()%10000000)
+	md := metadata.New(map[string]string{"userid": fmt.Sprintf("%d", userid), "logid": logid})
 	// create a new context with this metadata
 	ctx := metadata.NewContext(context.Background(), md)
 	r, err := c.Process(ctx, &pb.KitfwRequest{
@@ -64,5 +69,5 @@ func main() {
 		return
 	}
 
-	log.Printf("response: %s", res.Val)
+	log.Printf("response: %s took: %fms", res.Val, time.Since(starttime).Seconds()*1000)
 }
