@@ -74,6 +74,5 @@ func EncodeGRPCProcessResponse(_ context.Context, response interface{}) (interfa
 }
 
 func EncodeGRPCProcessRequest(_ context.Context, request interface{}) (interface{}, error) {
-
 	return request, nil
 }
