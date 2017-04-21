@@ -6,14 +6,16 @@ package pb
 // formats. It also includes endpoint middlewares.
 
 import (
+	"errors"
 	"fmt"
+	logger "kitfw/sg/log"
+	protocol "kitfw/sg/protocol"
 	kitfwService "kitfw/sg/service"
 	"time"
 
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/go-kit/kit/endpoint"
-	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics"
 )
 
@@ -32,16 +34,22 @@ func (e Endpoint) Process(ctx context.Context, request *KitfwRequest) (*KitfwRep
 
 func MakeProcessEndpoint(s kitfwService.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+
 		q := request.(*KitfwRequest)
-		ctx = context.WithValue(ctx, "logid", q.Logid)
-		new_ctx, v, err := s.Process(ctx, q.Protoid, q.Payload)
-		_ = new_ctx
+		method, ok := protocol.PROTOCOL_METHOD_MAP[q.Protoid]
+		if ok != true {
+			return nil, errors.New(fmt.Sprintf("error protoid:%d", q.Protoid))
+		}
+
+		rlogger := ctx.Value("logger").(*logger.Logger)
+		rlogger.With("protoid", q.Protoid, "method", method)
+
+		v, err := s.Process(ctx, q.Protoid, q.Payload)
 		if err != nil {
 			return nil, err
 		}
 		return &KitfwReply{
 			Protoid: q.Protoid + 1,
-			Logid:   q.Logid,
 			Payload: v,
 		}, nil
 	}
@@ -59,11 +67,13 @@ func EndpointInstrumentingMiddleware(duration metrics.Histogram) endpoint.Middle
 	}
 }
 
-func EndpointLoggingMiddleware(logger log.Logger) endpoint.Middleware {
+func EndpointLoggingMiddleware() endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 			defer func(begin time.Time) {
-				logger.Log("error", err, "took", time.Since(begin))
+				rlogger := ctx.Value("logger").(*logger.Logger)
+				rlogger.Info("error", err, "all-took", time.Since(begin))
+				rlogger = nil
 			}(time.Now())
 			return next(ctx, request)
 

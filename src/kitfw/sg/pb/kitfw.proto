@@ -5,13 +5,11 @@ package pb;
 
 message KitfwRequest {
   int32 protoid = 1;
-  string logid=2;
   bytes payload = 3;
 }
 
 message KitfwReply {
   int32 protoid = 1;
-  string logid=2;
   bytes payload = 3;
 }
 

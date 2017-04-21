@@ -11,17 +11,18 @@ import (
 	"syscall"
 	"time"
 
+	"context"
+
 	stdopentracing "github.com/opentracing/opentracing-go"
 	zipkin "github.com/openzipkin/zipkin-go-opentracing"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
+	logger "kitfw/sg/log"
 	"kitfw/sg/pb"
 	kitservice "kitfw/sg/service"
 
 	"github.com/go-kit/kit/endpoint"
-	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/metrics/prometheus"
 	sdetcd "github.com/go-kit/kit/sd/etcd"
@@ -37,16 +38,10 @@ func main() {
 	)
 	flag.Parse()
 
-	// Logging domain.
-	var logger log.Logger
-	{
-		var myTimestamp log.Valuer = func() interface{} { return time.Now().String() }
-		logger = log.NewLogfmtLogger(os.Stdout)
-		logger = log.NewContext(logger).With("ts", myTimestamp)
-		logger = log.NewContext(logger).With("caller", log.DefaultCaller)
-	}
-	logger.Log("msg", "hello kitfw")
-	defer logger.Log("msg", "goodbye kitfw")
+	//log
+	logger.SetDefaultLogLevel(logger.LevelDebug)
+	logger.Info("msg", "hello kitfw")
+	defer logger.Info("msg", "goodbye kitfw")
 
 	// Metrics domain.
 	fieldKeys := []string{"method", "protoid", "error"}
@@ -82,27 +77,25 @@ func main() {
 	var tracer stdopentracing.Tracer
 	{
 		if *zipkinAddr != "" {
-			logger := log.NewContext(logger).With("tracer", "Zipkin")
-			logger.Log("zipkinAddr", *zipkinAddr)
+			logger.Info("tracer", "Zipkin", "zipkinAddr", *zipkinAddr)
 			// collector, err := zipkin.NewKafkaCollector(
 			// 	strings.Split(*zipkinAddr, ","),
 			// 	zipkin.KafkaLogger(logger),
 			// )
 			collector, err := zipkin.NewHTTPCollector(*zipkinAddr)
 			if err != nil {
-				logger.Log("err", err)
+				logger.Error("tracer", "Zipkin", "err", err)
 				os.Exit(1)
 			}
 			tracer, err = zipkin.NewTracer(
-				zipkin.NewRecorder(collector, true, "servicename:host_ip", "kitfw"), zipkin.WithLogger(logger),
+				zipkin.NewRecorder(collector, true, "servicename:host_ip", "kitfw"), zipkin.WithLogger(logger.GetDefaultLogger()),
 			)
 			if err != nil {
-				logger.Log("err", err)
+				logger.Error("tracer", "Zipkin", "err", err)
 				os.Exit(1)
 			}
 		} else {
-			logger := log.NewContext(logger).With("tracer", "none")
-			logger.Log()
+			logger.Info("tracer", "none")
 			tracer = stdopentracing.GlobalTracer() // no-op
 		}
 	}
@@ -110,8 +103,8 @@ func main() {
 	// Business domain.
 	var service kitservice.Service
 	{
-		service = kitservice.NewBasicService(logger)
-		service = kitservice.ServiceLoggingMiddleware(logger)(service)
+		service = kitservice.NewBasicService()
+		service = kitservice.ServiceLoggingMiddleware()(service)
 		service = kitservice.ServiceInstrumentingMiddleware(requestCount, duration)(service)
 	}
 
@@ -119,12 +112,11 @@ func main() {
 	var requestEndpoint endpoint.Endpoint
 	{
 		processDuration := endpointDuration.With("method", "Process")
-		processLogger := log.NewContext(logger).With("method", "Process")
 
 		requestEndpoint = pb.MakeProcessEndpoint(service)
 		requestEndpoint = opentracing.TraceServer(tracer, "Process")(requestEndpoint)
 		requestEndpoint = pb.EndpointInstrumentingMiddleware(processDuration)(requestEndpoint)
-		requestEndpoint = pb.EndpointLoggingMiddleware(processLogger)(requestEndpoint)
+		requestEndpoint = pb.EndpointLoggingMiddleware()(requestEndpoint)
 	}
 
 	// Mechanical domain.
@@ -140,8 +132,6 @@ func main() {
 
 	// Debug listener.
 	go func() {
-		logger := log.NewContext(logger).With("transport", "debug")
-
 		m := http.NewServeMux()
 		m.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
 		m.Handle("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
@@ -150,25 +140,23 @@ func main() {
 		m.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
 		m.Handle("/metrics", stdprometheus.Handler())
 
-		logger.Log("debugAddr", *debugAddr)
+		logger.Info("transport", "debug", "debugAddr", *debugAddr)
 		errc <- http.ListenAndServe(*debugAddr, m)
 	}()
 
 	// gRPC transport.
 	go func() {
-		logger := log.NewContext(logger).With("transport", "gRPC")
-
 		ln, err := net.Listen("tcp", *grpcAddr)
 		if err != nil {
 			errc <- err
 			return
 		}
 
-		srv := pb.MakeGRPCServer(ctx, requestEndpoint, tracer, logger)
+		srv := pb.MakeGRPCServer(ctx, requestEndpoint, tracer, logger.GetDefaultLogger())
 		s := grpc.NewServer()
 		pb.RegisterKitfwServer(s, srv)
 
-		logger.Log("grpcAddr", *grpcAddr)
+		logger.Info("transport", "gRPC", "grpcAddr", *grpcAddr)
 		errc <- s.Serve(ln)
 	}()
 
@@ -186,11 +174,11 @@ func main() {
 			},
 		)
 		if etcdErr != nil {
-			logger.Log("unexpected error creating client", etcdErr)
+			logger.Error("unexpected error creating client", etcdErr)
 			os.Exit(1)
 		}
 		if etcdClient == nil {
-			logger.Log("expected new Client, got nil")
+			logger.Error("expected new Client, got nil")
 			os.Exit(1)
 		}
 		// registrar
@@ -200,10 +188,10 @@ func main() {
 				Key:           key,
 				Value:         *grpcAddr,
 				DeleteOptions: nil,
-			}, logger)
+			}, logger.GetDefaultLogger())
 
 			if registrar == nil {
-				logger.Log("expected new Client, got nil")
+				logger.Error("expected new Client, got nil")
 				os.Exit(1)
 			}
 			registrar.Deregister()
@@ -216,9 +204,9 @@ func main() {
 				}
 			}
 		}()
-		logger.Log("etcdAddr", *etcdAddr)
+		logger.Info("etcdAddr", *etcdAddr)
 	}
 
 	// Run!
-	logger.Log("exit", <-errc)
+	logger.Error("exit", <-errc)
 }

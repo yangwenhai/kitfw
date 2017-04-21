@@ -26,7 +26,7 @@ $ docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 23
  -initial-cluster etcd0=http://${HostIP}:2380 \
  -initial-cluster-state new
 
-# build 
+# build  
 
 $ git clone https://github.com/yangwenhai/kitfw.git
 

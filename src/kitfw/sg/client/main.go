@@ -10,8 +10,10 @@ import (
 
 	protocol "kitfw/sg/protocol"
 
-	"golang.org/x/net/context"
+	"context"
+
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -43,9 +45,11 @@ func main() {
 	payload, _ := protocol.Encode(req)
 
 	//send request
-	r, err := c.Process(context.Background(), &pb.KitfwRequest{
+	md := metadata.New(map[string]string{"userid": "1001", "logid": "123456"})
+	// create a new context with this metadata
+	ctx := metadata.NewContext(context.Background(), md)
+	r, err := c.Process(ctx, &pb.KitfwRequest{
 		Protoid: protocol.PROTOCOL_CONCAT_REQUEST,
-		Logid:   "123456",
 		Payload: payload,
 	})
 	if err != nil {

@@ -4,13 +4,18 @@ package pb
 // It utilizes the transport/grpc.Server.
 
 import (
-	stdopentracing "github.com/opentracing/opentracing-go"
-	"golang.org/x/net/context"
+	"context"
+
+	"google.golang.org/grpc/metadata"
+
+	logger "kitfw/sg/log"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/tracing/opentracing"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
+	stdopentracing "github.com/opentracing/opentracing-go"
+	oldcontext "golang.org/x/net/context"
 )
 
 // MakeGRPCServer makes a set of endpoints available as a gRPC AddServer.
@@ -20,11 +25,10 @@ func MakeGRPCServer(ctx context.Context, endpoint endpoint.Endpoint, tracer stdo
 	}
 	return &grpcServer{
 		process: grpctransport.NewServer(
-			ctx,
 			endpoint,
 			DecodeGRPCProcessRequest,
 			EncodeGRPCProcessResponse,
-			append(options, grpctransport.ServerBefore(opentracing.FromGRPCRequest(tracer, "Proces", logger)))...,
+			append(options, grpctransport.ServerBefore(RequestMetaDataFunc), grpctransport.ServerBefore(opentracing.FromGRPCRequest(tracer, "Proces", logger)))...,
 		),
 	}
 }
@@ -33,12 +37,28 @@ type grpcServer struct {
 	process grpctransport.Handler
 }
 
-func (s *grpcServer) Process(ctx context.Context, req *KitfwRequest) (*KitfwReply, error) {
+func (s *grpcServer) Process(ctx oldcontext.Context, req *KitfwRequest) (*KitfwReply, error) {
 	_, res, err := s.process.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return res.(*KitfwReply), nil
+}
+
+func RequestMetaDataFunc(ctx context.Context, md metadata.MD) context.Context {
+	var logid interface{}
+	if logids, ok := md["logid"]; ok && len(logids) > 0 {
+		logid = logids[0]
+	}
+	var userid interface{}
+	if userids, ok := md["userid"]; ok && len(userids) > 0 {
+		userid = userids[0]
+	}
+	rlogger := logger.NewLogger()
+	rlogger.SetLogLevel(logger.LevelDebug)
+	rlogger.With("logid", logid, "userid", userid)
+	ctx = context.WithValue(ctx, "logger", rlogger)
+	return ctx
 }
 
 func DecodeGRPCProcessRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
