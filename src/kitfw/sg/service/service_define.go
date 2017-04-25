@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	protocol "framework/sg/protocol"
+	protocol "kitfw/sg/protocol"
 )
 
 type BaseHandler interface {

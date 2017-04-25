@@ -8,9 +8,9 @@ package pb
 import (
 	"errors"
 	"fmt"
-	logger "framework/sg/log"
-	protocol "framework/sg/protocol"
-	kitfwService "framework/sg/service"
+	logger "kitfw/sg/log"
+	protocol "kitfw/sg/protocol"
+	kitfwService "kitfw/sg/service"
 	"time"
 
 	"context"

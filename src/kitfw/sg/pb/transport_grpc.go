@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
-	logger "framework/sg/log"
+	logger "kitfw/sg/log"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"

@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
-	logger "framework/sg/log"
-	protocol "framework/sg/protocol"
+	logger "kitfw/sg/log"
+	protocol "kitfw/sg/protocol"
 	"time"
 
 	"context"
