@@ -45,7 +45,7 @@ $ go build kitfw/sg/client
 
 ./server -zipkinAddr=http://192.168.88.68:9411/api/v1/spans -etcdAddr=http://192.168.99.102:2379
 
-./client 10001 hello kitfw
+./client -zipkinAddr=http://192.168.88.68:9411/api/v1/spans
 
 # result
 
