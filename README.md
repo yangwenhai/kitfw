@@ -49,9 +49,9 @@ $ go build kitfw/sg/client
 
 # result
 
- ![image](https://github.com/yangwenhai/kitfw/blob/master/image/server.png)
-
  ![image](https://github.com/yangwenhai/kitfw/blob/master/image/client.png)
+
+ ![image](https://github.com/yangwenhai/kitfw/blob/master/image/server.png)
 
  ![image](https://github.com/yangwenhai/kitfw/blob/master/image/zipkin.png)
 
