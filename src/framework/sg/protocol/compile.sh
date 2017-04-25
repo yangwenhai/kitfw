@@ -1,4 +1,4 @@
 #!/bin/bash
-bambam -o . -p protocol sum.go
+bambam -o . -p protocol message.go
 capnpc -ogo schema.capnp
 

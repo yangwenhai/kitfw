@@ -5,7 +5,7 @@ import (
 	stdopentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 
-	"kitfw/sg/pb"
+	"framework/sg/pb"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
