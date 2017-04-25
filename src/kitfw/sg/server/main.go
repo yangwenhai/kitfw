@@ -26,7 +26,6 @@ import (
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/metrics/prometheus"
 	sdetcd "github.com/go-kit/kit/sd/etcd"
-	"github.com/go-kit/kit/tracing/opentracing"
 )
 
 func main() {
@@ -88,7 +87,8 @@ func main() {
 				os.Exit(1)
 			}
 			tracer, err = zipkin.NewTracer(
-				zipkin.NewRecorder(collector, true, "servicename:host_ip", "kitfw"), zipkin.WithLogger(logger.GetDefaultLogger()),
+				zipkin.NewRecorder(collector, false, "0.0.0.0:8081", "kitfw"),
+				zipkin.ClientServerSameSpan(true),
 			)
 			if err != nil {
 				logger.Error("tracer", "Zipkin", "err", err)
@@ -111,12 +111,10 @@ func main() {
 	// Endpoint domain.
 	var requestEndpoint endpoint.Endpoint
 	{
-		processDuration := endpointDuration.With("method", "Process")
-
-		requestEndpoint = pb.MakeProcessEndpoint(service)
-		requestEndpoint = opentracing.TraceServer(tracer, "Process")(requestEndpoint)
-		requestEndpoint = pb.EndpointInstrumentingMiddleware(processDuration)(requestEndpoint)
-		requestEndpoint = pb.EndpointLoggingMiddleware()(requestEndpoint)
+		requestEndpoint = pb.MakeProcessEndpoint(service, tracer)
+		requestEndpoint = pb.EndpointLoggingMiddleware(tracer)(requestEndpoint)
+		requestEndpoint = pb.EndpointInstrumentingMiddleware(endpointDuration)(requestEndpoint)
+		requestEndpoint = pb.TraceInternalService(tracer, "Process")(requestEndpoint)
 	}
 
 	// Mechanical domain.
@@ -139,7 +137,6 @@ func main() {
 		m.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
 		m.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
 		m.Handle("/metrics", stdprometheus.Handler())
-
 		logger.Info("transport", "debug", "debugAddr", *debugAddr)
 		errc <- http.ListenAndServe(*debugAddr, m)
 	}()
@@ -151,11 +148,9 @@ func main() {
 			errc <- err
 			return
 		}
-
 		srv := pb.MakeGRPCServer(ctx, requestEndpoint, tracer, logger.GetDefaultLogger())
 		s := grpc.NewServer()
 		pb.RegisterKitfwServer(s, srv)
-
 		logger.Info("transport", "gRPC", "grpcAddr", *grpcAddr)
 		errc <- s.Serve(ln)
 	}()

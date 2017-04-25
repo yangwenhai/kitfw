@@ -28,7 +28,7 @@ func MakeGRPCServer(ctx context.Context, endpoint endpoint.Endpoint, tracer stdo
 			endpoint,
 			DecodeGRPCProcessRequest,
 			EncodeGRPCProcessResponse,
-			append(options, grpctransport.ServerBefore(RequestMetaDataFunc), grpctransport.ServerBefore(opentracing.FromGRPCRequest(tracer, "Proces", logger)))...,
+			append(options, grpctransport.ServerBefore(RequestMetaDataFunc), grpctransport.ServerBefore(opentracing.FromGRPCRequest(tracer, "Process", logger)))...,
 		),
 	}
 }
