@@ -14,6 +14,7 @@ import (
 
 	"context"
 
+	"kitfw/sg/define"
 	logger "kitfw/sg/log"
 
 	stdopentracing "github.com/opentracing/opentracing-go"
@@ -60,7 +61,7 @@ func main() {
 				os.Exit(1)
 			}
 			tracer, err = zipkin.NewTracer(
-				zipkin.NewRecorder(collector, false, "0.0.0.0:8081", "kitfw"),
+				zipkin.NewRecorder(collector, false, "0.0.0.0:8081", define.SERVER_NAME),
 				zipkin.ClientServerSameSpan(true),
 			)
 			if err != nil {

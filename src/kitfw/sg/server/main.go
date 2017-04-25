@@ -20,6 +20,7 @@ import (
 
 	logger "kitfw/sg/log"
 	"kitfw/sg/pb"
+	kitfw/sg/define"
 	kitservice "kitfw/sg/service"
 
 	"github.com/go-kit/kit/endpoint"
@@ -39,8 +40,8 @@ func main() {
 
 	//log
 	logger.SetDefaultLogLevel(logger.LevelDebug)
-	logger.Info("msg", "hello kitfw")
-	defer logger.Info("msg", "goodbye kitfw")
+	logger.Info("msg", fmt.Sprintf("hello %s",define.SERVER_NAME))
+	defer logger.Info("msg", "goodbye %s",define.SERVER_NAME))
 
 	// Metrics domain.
 	fieldKeys := []string{"method", "protoid", "error"}
@@ -48,7 +49,7 @@ func main() {
 	{
 		// Business level metrics.
 		requestCount = prometheus.NewCounterFrom(stdprometheus.CounterOpts{
-			Namespace: "kitfw",
+			Namespace: define.SERVER_NAME,
 			Name:      "request_count",
 			Help:      "Number of requests received.",
 		}, fieldKeys)
@@ -57,7 +58,7 @@ func main() {
 	{
 		// Transport level metrics.
 		duration = prometheus.NewSummaryFrom(stdprometheus.SummaryOpts{
-			Namespace: "kitfw",
+			Namespace: define.SERVER_NAME,
 			Name:      "request_duration_ns",
 			Help:      "Request duration in nanoseconds.",
 		}, fieldKeys)
@@ -66,7 +67,7 @@ func main() {
 	{
 		// Transport level metrics.
 		endpointDuration = prometheus.NewSummaryFrom(stdprometheus.SummaryOpts{
-			Namespace: "kitfw",
+			Namespace: define.SERVER_NAME,
 			Name:      "endpoint_request_duration_ns",
 			Help:      "endpoint request duration in nanoseconds.",
 		}, []string{"method", "success"})
@@ -87,7 +88,7 @@ func main() {
 				os.Exit(1)
 			}
 			tracer, err = zipkin.NewTracer(
-				zipkin.NewRecorder(collector, false, "0.0.0.0:8081", "kitfw"),
+				zipkin.NewRecorder(collector, false, "0.0.0.0:8081", define.SERVER_NAME),
 				zipkin.ClientServerSameSpan(true),
 			)
 			if err != nil {
@@ -178,7 +179,7 @@ func main() {
 		}
 		// registrar
 		go func() {
-			key := fmt.Sprintf("%s/%s", "/kitfw/service", *grpcAddr)
+			key := fmt.Sprintf("%s/service/%s/",define.SERVER_NAME, *grpcAddr)
 			registrar := sdetcd.NewRegistrar(etcdClient, sdetcd.Service{
 				Key:           key,
 				Value:         *grpcAddr,
