@@ -55,4 +55,4 @@ $ go build kitfw/sg/client
 
  ![image](https://github.com/yangwenhai/kitfw/blob/master/image/zipkin.png)
 
- ![image](https://github.com/yangwenhai/kitfw/blob/master/image/zipkin_detail.png.png)
+ ![image](https://github.com/yangwenhai/kitfw/blob/master/image/zipkin_detail.png)
