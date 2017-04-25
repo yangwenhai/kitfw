@@ -32,20 +32,20 @@ $ git clone https://github.com/yangwenhai/kitfw.git
 
 $ cd kitfw && source devenv.sh
 
-$ cd src/framework/vendor && govendor sync
+$ cd src/kitfw/vendor && govendor sync
 
 $ cd ../../../
 
-$ go build framework/sg/server
+$ go build kitfw/sg/server
 
-$ go build framework/sg/client 
+$ go build kitfw/sg/client 
 
 
 # run
 
 ./server -zipkinAddr=http://192.168.88.68:9411/api/v1/spans -etcdAddr=http://192.168.99.102:2379
 
-./client ./client -zipkinAddr=http://192.168.88.68:9411/api/v1/spans
+./client 10001 hello kitfw
 
 # result
 
