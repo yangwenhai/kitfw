@@ -18,9 +18,9 @@ import (
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 
+	"kitfw/sg/define"
 	logger "kitfw/sg/log"
 	"kitfw/sg/pb"
-	kitfw/sg/define"
 	kitservice "kitfw/sg/service"
 
 	"github.com/go-kit/kit/endpoint"
@@ -40,8 +40,8 @@ func main() {
 
 	//log
 	logger.SetDefaultLogLevel(logger.LevelDebug)
-	logger.Info("msg", fmt.Sprintf("hello %s",define.SERVER_NAME))
-	defer logger.Info("msg", "goodbye %s",define.SERVER_NAME))
+	logger.Info("msg", fmt.Sprintf("hello %s", define.SERVER_NAME))
+	defer logger.Info("msg", fmt.Sprintf("goodbye %s", define.SERVER_NAME))
 
 	// Metrics domain.
 	fieldKeys := []string{"method", "protoid", "error"}
@@ -179,7 +179,7 @@ func main() {
 		}
 		// registrar
 		go func() {
-			key := fmt.Sprintf("%s/service/%s/",define.SERVER_NAME, *grpcAddr)
+			key := fmt.Sprintf("%s/service/%s/", define.SERVER_NAME, *grpcAddr)
 			registrar := sdetcd.NewRegistrar(etcdClient, sdetcd.Service{
 				Key:           key,
 				Value:         *grpcAddr,

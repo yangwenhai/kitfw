@@ -2,8 +2,11 @@
 package main
 
 import (
+	"context"
+
 	stdopentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
 	"kitfw/sg/pb"
 
@@ -31,8 +34,20 @@ func NewEndPoint(conn *grpc.ClientConn, tracer stdopentracing.Tracer, logger log
 			pb.DecodeGRPCProcessResponse,
 			pb.KitfwReply{},
 			grpctransport.ClientBefore(opentracing.ToGRPCRequest(tracer, logger)),
+			grpctransport.ClientBefore(RequestMetaDataFunc),
 		).Endpoint()
 		endpoint = opentracing.TraceClient(tracer, opname)(endpoint)
 	}
 	return endpoint
+}
+
+func RequestMetaDataFunc(ctx context.Context, md *metadata.MD) context.Context {
+	tmpmd, ok := metadata.FromContext(ctx)
+	// "ToGRPCRequest" will modify the md,so we just apennd
+	if ok {
+		for k, v := range tmpmd {
+			(*md)[k] = append((*md)[k], v...)
+		}
+	}
+	return ctx
 }

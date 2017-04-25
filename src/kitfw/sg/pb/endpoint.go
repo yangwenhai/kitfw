@@ -51,7 +51,6 @@ func MakeProcessEndpoint(s kitfwService.Service, tracer stdopentracing.Tracer) e
 		if ok != true {
 			return nil, errors.New(fmt.Sprintf("error protoid:%d", q.Protoid))
 		}
-		_ = method
 		endpoint = TraceInternalService(tracer, method)(endpoint)
 		return endpoint(ctx, request)
 	}
@@ -103,6 +102,7 @@ func TraceInternalService(tracer stdopentracing.Tracer, operationName string) en
 				serviceSpan = tracer.StartSpan(operationName)
 			}
 			defer serviceSpan.Finish()
+			serviceSpan.LogKV("logid", ctx.Value("logid"))
 			otext.SpanKindRPCServer.Set(serviceSpan)
 			ctx = stdopentracing.ContextWithSpan(ctx, serviceSpan)
 			return next(ctx, request)

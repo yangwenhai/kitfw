@@ -102,6 +102,9 @@ func concat(conn *grpc.ClientConn, tracer stdopentracing.Tracer, str1 string, st
 	md := metadata.New(map[string]string{"userid": fmt.Sprintf("%d", userid), "logid": logid})
 	// create a new context with this metadata
 	ctx := metadata.NewContext(context.Background(), md)
+	//ctx := context.Background()
+	//ctx = context.WithValue(ctx, "logid", logid)
+	//ctx = context.WithValue(ctx, "userid", userid)
 
 	//endpoint
 	sumendpoint := NewEndPoint(conn, tracer, logger.GetDefaultLogger(), "Concat")
@@ -143,6 +146,9 @@ func sum(conn *grpc.ClientConn, tracer stdopentracing.Tracer, num1 int64, num2 i
 	md := metadata.New(map[string]string{"userid": fmt.Sprintf("%d", userid), "logid": logid})
 	// create a new context with this metadata
 	ctx := metadata.NewContext(context.Background(), md)
+	//ctx := context.Background()
+	//ctx = context.WithValue(ctx, "logid", logid)
+	//ctx = context.WithValue(ctx, "userid", userid)
 
 	//endpoint
 	sumendpoint := NewEndPoint(conn, tracer, logger.GetDefaultLogger(), "Sum")

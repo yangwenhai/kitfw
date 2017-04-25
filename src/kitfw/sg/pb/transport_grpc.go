@@ -54,10 +54,12 @@ func RequestMetaDataFunc(ctx context.Context, md metadata.MD) context.Context {
 	if userids, ok := md["userid"]; ok && len(userids) > 0 {
 		userid = userids[0]
 	}
+	logger.Info("logid", logid, "userid", userid)
 	rlogger := logger.NewLogger()
 	rlogger.SetLogLevel(logger.LevelDebug)
 	rlogger.With("logid", logid, "userid", userid)
 	ctx = context.WithValue(ctx, "logger", rlogger)
+	ctx = context.WithValue(ctx, "logid", logid)
 	return ctx
 }
 
