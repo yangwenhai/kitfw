@@ -46,11 +46,11 @@ func (s *grpcServer) Process(ctx oldcontext.Context, req *KitfwRequest) (*KitfwR
 }
 
 func RequestMetaDataFunc(ctx context.Context, md metadata.MD) context.Context {
-	var logid interface{}
+	logid := ""
 	if logids, ok := md["logid"]; ok && len(logids) > 0 {
 		logid = logids[0]
 	}
-	var userid interface{}
+	userid := ""
 	if userids, ok := md["userid"]; ok && len(userids) > 0 {
 		userid = userids[0]
 	}

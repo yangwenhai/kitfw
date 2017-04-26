@@ -44,7 +44,7 @@ func main() {
 	defer logger.Info("msg", fmt.Sprintf("goodbye %s", define.SERVER_NAME))
 
 	// Metrics domain.
-	fieldKeys := []string{"method", "protoid", "error"}
+	fieldKeys := []string{"method", "protoid", "logid", "error"}
 	var requestCount metrics.Counter
 	{
 		// Business level metrics.
@@ -70,7 +70,7 @@ func main() {
 			Namespace: define.SERVER_NAME,
 			Name:      "endpoint_request_duration_ns",
 			Help:      "endpoint request duration in nanoseconds.",
-		}, []string{"method", "success"})
+		}, []string{"method", "logid", "success"})
 	}
 
 	// Tracing domain.

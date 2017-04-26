@@ -62,7 +62,7 @@ func ServiceInstrumentingMiddleware(rc metrics.Counter, rl metrics.Histogram) Mi
 
 func (mw serviceInstrumentingMiddleware) Process(ctx context.Context, protoid int32, payload []byte) (ret []byte, err error) {
 	defer func(begin time.Time) {
-		lvs := []string{"method", protocol.PROTOCOL_METHOD_MAP[protoid], "protoid", fmt.Sprint(protoid), "error", fmt.Sprint(err != nil)}
+		lvs := []string{"method", protocol.PROTOCOL_METHOD_MAP[protoid], "protoid", fmt.Sprint(protoid), "logid", ctx.Value("logid").(string), "error", fmt.Sprint(err != nil)}
 		mw.requestCount.With(lvs...).Add(1)
 		mw.requestLatency.With(lvs...).Observe(time.Since(begin).Seconds())
 	}(time.Now())

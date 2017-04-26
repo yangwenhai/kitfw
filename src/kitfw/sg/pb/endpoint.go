@@ -64,7 +64,7 @@ func EndpointInstrumentingMiddleware(duration metrics.Histogram) endpoint.Middle
 			if ok != true {
 				return nil, errors.New(fmt.Sprintf("error protoid:%d", q.Protoid))
 			}
-			duration := duration.With("method", method)
+			duration := duration.With("method", method, "logid", ctx.Value("logid").(string))
 			endpoint := func(ctx context.Context, request interface{}) (response interface{}, err error) {
 				defer func(begin time.Time) {
 					duration.With("success", fmt.Sprint(err == nil)).Observe(time.Since(begin).Seconds())
